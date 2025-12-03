@@ -1,14 +1,25 @@
 import { useState, useEffect } from "react";
+import type { ServiceItem } from "../types/Order";
 
-export default function AddOrderModal({ isOpen, onClose, onAddService }) {
-  const [serviceName, setServiceName] = useState("");
-  const [weight, setWeight] = useState("");
-  const [price, setPrice] = useState("");
-  const [total, setTotal] = useState(0);
+type AddOrderModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddService: (item: ServiceItem) => void;
+};
+
+export default function AddOrderModal({
+  isOpen,
+  onClose,
+  onAddService,
+}: AddOrderModalProps) {
+  const [serviceName, setServiceName] = useState<string>("");
+  const [weight, setWeight] = useState<string>("");
+  const [price, setPrice] = useState<string>("");
+  const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
-    const w = parseFloat(weight) || 0;
-    const p = parseFloat(price) || 0;
+    const w = parseFloat(weight || "0") || 0;
+    const p = parseFloat(price || "0") || 0;
     setTotal(w * p);
   }, [weight, price]);
 
@@ -28,13 +39,14 @@ export default function AddOrderModal({ isOpen, onClose, onAddService }) {
       return;
     }
 
-    onAddService({
+    const item: ServiceItem = {
       serviceName,
       weight: Number(weight),
       price: Number(price),
       total,
-    });
+    };
 
+    onAddService(item);
     onClose();
   };
 

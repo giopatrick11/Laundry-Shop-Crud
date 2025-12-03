@@ -1,8 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function AddServiceModal({ isOpen, onClose, onAddCustomer }) {
+type AddServiceModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddCustomer: (data: {
+    customerName: string;
+    contactNumber: string;
+  }) => void;
+};
+
+export default function AddServiceModal({
+  isOpen,
+  onClose,
+  onAddCustomer,
+}: AddServiceModalProps) {
   const [customerName, setCustomerName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
+
+  // Reset fields when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setCustomerName("");
+      setContactNumber("");
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -27,7 +48,11 @@ export default function AddServiceModal({ isOpen, onClose, onAddCustomer }) {
       return;
     }
 
-    onAddCustomer({ customerName, contactNumber });
+    onAddCustomer({
+      customerName: customerName.trim(),
+      contactNumber: contactNumber.trim(),
+    });
+
     onClose();
   };
 

@@ -1,12 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+type UpdateStatusModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  currentStatus: string;
+  onSave: (newStatus: string) => void;
+};
 
 export default function UpdateStatusModal({
   isOpen,
   onClose,
   currentStatus,
   onSave,
-}) {
-  const [status, setStatus] = useState(currentStatus);
+}: UpdateStatusModalProps) {
+  const [status, setStatus] = useState<string>(currentStatus);
+
+  // Reset dropdown value whenever modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setStatus(currentStatus);
+    }
+  }, [isOpen, currentStatus]);
 
   if (!isOpen) return null;
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -58,7 +59,6 @@ class OrderController extends Controller
         ], 201);
     }
 
-
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
@@ -72,7 +72,6 @@ class OrderController extends Controller
             'order'   => $order,
         ]);
     }
-
 
     public function update(Request $request, Order $order)
     {
@@ -111,7 +110,6 @@ class OrderController extends Controller
         ]);
     }
 
-
     public function delete($id)
     {
         $order = Order::find($id);
@@ -127,5 +125,28 @@ class OrderController extends Controller
         $order->delete();
 
         return response()->json(['message' => 'Order deleted successfully']);
+    }
+
+    /* ===========================================================
+     * UPDATE CUSTOMER (Name + Phone) ACROSS ALL THEIR ORDERS
+     * =========================================================== */
+    public function updateCustomer(Request $request)
+    {
+        $request->validate([
+            'old_name' => 'required|string',
+            'old_phone' => 'required|string',
+            'new_name' => 'required|string',
+            'new_phone' => 'required|string',
+        ]);
+
+        DB::table('orders')
+            ->where('customer_name', $request->old_name)
+            ->where('contact_number', $request->old_phone)
+            ->update([
+                'customer_name' => $request->new_name,
+                'contact_number' => $request->new_phone,
+            ]);
+
+        return response()->json(['message' => 'Customer updated successfully']);
     }
 }

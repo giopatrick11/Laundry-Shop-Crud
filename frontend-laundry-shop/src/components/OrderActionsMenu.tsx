@@ -1,21 +1,30 @@
 import { useState, useRef, useEffect } from "react";
 
+type OrderActionsMenuProps = {
+  onEdit: () => void;
+  onDelete: () => void;
+  onStatus: () => void;
+  status: string;
+};
+
 export default function OrderActionsMenu({
   onEdit,
   onDelete,
   onStatus,
   status,
-}) {
+}: OrderActionsMenuProps) {
   const [open, setOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
-  const menuRef = useRef(null);
-  const buttonRef = useRef(null);
+
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const locked = status === "completed" || status === "cancelled";
 
+  // Close menu on click outside
   useEffect(() => {
-    const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -27,6 +36,8 @@ export default function OrderActionsMenu({
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
+
+      // open upward if not enough space
       setOpenUp(spaceBelow < 160);
     }
     setOpen((prev) => !prev);

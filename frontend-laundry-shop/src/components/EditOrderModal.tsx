@@ -1,9 +1,26 @@
 import { useState, useEffect } from "react";
+import type { Order, ServiceItem } from "../types/Order";
 
-export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
-  const [customerName, setCustomerName] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
-  const [services, setServices] = useState(order?.items || []);
+type EditOrderModalProps = {
+  isOpen: boolean;
+  order: Order | null;
+  onClose: () => void;
+  onSave: (data: {
+    customerName: string;
+    contactNumber: string;
+    services: ServiceItem[];
+  }) => void;
+};
+
+export default function EditOrderModal({
+  isOpen,
+  order,
+  onClose,
+  onSave,
+}: EditOrderModalProps) {
+  const [customerName, setCustomerName] = useState<string>("");
+  const [contactNumber, setContactNumber] = useState<string>("");
+  const [services, setServices] = useState<ServiceItem[]>([]);
 
   useEffect(() => {
     if (order) {
@@ -23,14 +40,22 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
 
   if (!isOpen || !order) return null;
 
-  const updateService = (index, field, value) => {
+  // UPDATE A SINGLE SERVICE FIELD
+  const updateService = (
+    index: number,
+    field: keyof ServiceItem,
+    value: string | number
+  ) => {
     const newServices = [...services];
-    newServices[index][field] = value;
+    (newServices[index] as any)[field] = value;
+
     newServices[index].total =
       Number(newServices[index].weight) * Number(newServices[index].price);
+
     setServices(newServices);
   };
 
+  // ADD NEW SERVICE BLOCK
   const addService = () => {
     setServices([
       ...services,
@@ -38,7 +63,8 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
     ]);
   };
 
-  const removeService = (index) => {
+  // REMOVE SERVICE (at least 1 must remain)
+  const removeService = (index: number) => {
     if (services.length === 1) {
       alert("You must have at least one service. Cannot remove.");
       return;
@@ -46,6 +72,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
     setServices(services.filter((_, i) => i !== index));
   };
 
+  // SAVE
   const handleSave = () => {
     if (!customerName.trim()) {
       alert("Customer name is required.");
@@ -55,6 +82,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
       alert("Contact number is required.");
       return;
     }
+
     for (const s of services) {
       if (!s.serviceName.trim()) {
         alert("Service name is required.");
@@ -79,7 +107,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
     onClose();
   };
 
-  // RESET STATE WHEN CANCELLED
+  // RESET TO ORIGINAL ORDER WHEN CANCELLED
   const handleCancel = () => {
     if (order) {
       setCustomerName(order.customer_name);
@@ -102,6 +130,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
       <div className="bg-white w-[550px] p-6 rounded-xl shadow-xl">
         <h2 className="text-2xl font-bold mb-4">Edit Order</h2>
 
+        {/* CUSTOMER NAME */}
         <input
           type="text"
           className="w-full border px-3 py-2 rounded mb-3"
@@ -110,6 +139,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
           onChange={(e) => setCustomerName(e.target.value)}
         />
 
+        {/* CONTACT NUMBER */}
         <input
           type="text"
           className="w-full border px-3 py-2 rounded mb-4"
@@ -122,8 +152,9 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
 
         {services.map((s, index) => (
           <div key={index} className="border p-4 rounded-lg mb-4">
+            {/* SERVICE NAME */}
             <select
-              value={services[index].serviceName}
+              value={s.serviceName}
               onChange={(e) =>
                 updateService(index, "serviceName", e.target.value)
               }
@@ -136,12 +167,13 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
               <option value="Press Only">Press Only</option>
             </select>
 
+            {/* WEIGHT / PRICE / TOTAL */}
             <div className="grid grid-cols-3 gap-3">
               <input
                 type="number"
                 step="0.01"
                 className="px-3 py-2 border rounded-lg"
-                value={services[index].weight}
+                value={s.weight}
                 onChange={(e) =>
                   updateService(index, "weight", Number(e.target.value))
                 }
@@ -151,7 +183,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
                 type="number"
                 step="0.01"
                 className="px-3 py-2 border rounded-lg"
-                value={services[index].price}
+                value={s.price}
                 onChange={(e) =>
                   updateService(index, "price", Number(e.target.value))
                 }
@@ -161,7 +193,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
                 type="number"
                 readOnly
                 className="px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
-                value={services[index].total}
+                value={s.total}
               />
             </div>
 
@@ -181,6 +213,7 @@ export default function EditOrderModal({ isOpen, order, onClose, onSave }) {
           Add Service
         </button>
 
+        {/* ACTION BUTTONS */}
         <div className="flex justify-end gap-3">
           <button
             className="px-4 py-2 bg-gray-300 rounded"

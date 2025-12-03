@@ -6,14 +6,23 @@ export default function Customers() {
   const [search, setSearch] = useState("");
   const [customers, setCustomers] = useState([]);
 
+  // PAGINATION
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     getOrders().then((res) => {
-      const orders = res.data;
+      const orders = res.data || [];
+
+      // Include only ACTIVE orders: pending, ongoing, completed
+      const validOrders = orders.filter(
+        (o) => o && ["pending", "ongoing", "completed"].includes(o.status)
+      );
 
       // Group by customer_name + contact_number
       const grouped = {};
 
-      orders.forEach((order) => {
+      validOrders.forEach((order) => {
         const key = order.customer_name + "|" + order.contact_number;
 
         if (!grouped[key]) {
@@ -31,8 +40,25 @@ export default function Customers() {
     });
   }, []);
 
-  const filtered = customers.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // Search by name OR phone
+  const filtered = customers.filter((c) => {
+    const q = search.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) || c.phone.toLowerCase().includes(q)
+    );
+  });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCustomers = filtered.slice(
+    startIndex,
+    startIndex + itemsPerPage
   );
 
   return (
@@ -120,7 +146,7 @@ export default function Customers() {
             </thead>
 
             <tbody className="bg-white">
-              {filtered.map((c, index) => (
+              {paginatedCustomers.map((c, index) => (
                 <tr key={index}>
                   <td className="py-4 px-6 border-b border-gray-200">
                     {c.name}
@@ -144,6 +170,37 @@ export default function Customers() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* PAGINATION */}
+        <div className="flex justify-center items-center gap-3 mt-6">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className={`px-4 py-2 rounded ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-white shadow"
+            }`}
+          >
+            Previous
+          </button>
+
+          <span className="px-3 py-1 bg-white shadow rounded">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className={`px-4 py-2 rounded ${
+              currentPage === totalPages || totalPages === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-white shadow"
+            }`}
+          >
+            Next
+          </button>
         </div>
       </main>
     </div>

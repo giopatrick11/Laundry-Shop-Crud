@@ -6,7 +6,6 @@ export default function AddOrderModal({ isOpen, onClose, onAddService }) {
   const [price, setPrice] = useState("");
   const [total, setTotal] = useState(0);
 
-  // Compute total automatically
   useEffect(() => {
     const w = parseFloat(weight) || 0;
     const p = parseFloat(price) || 0;
@@ -15,15 +14,36 @@ export default function AddOrderModal({ isOpen, onClose, onAddService }) {
 
   if (!isOpen) return null;
 
+  const handleAdd = () => {
+    if (!serviceName.trim()) {
+      alert("Please select a service.");
+      return;
+    }
+    if (!weight || Number(weight) <= 0) {
+      alert("Weight must be greater than 0.");
+      return;
+    }
+    if (!price || Number(price) <= 0) {
+      alert("Price must be greater than 0.");
+      return;
+    }
+
+    onAddService({
+      serviceName,
+      weight: Number(weight),
+      price: Number(price),
+      total,
+    });
+
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex justify-center items-center z-50">
       <div className="bg-white w-[420px] p-6 rounded-2xl shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">
-          Add Service Item
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">Add Service Item</h2>
 
         <div className="space-y-4">
-          {/* SERVICE DROPDOWN */}
           <select
             value={serviceName}
             onChange={(e) => setServiceName(e.target.value)}
@@ -36,7 +56,6 @@ export default function AddOrderModal({ isOpen, onClose, onAddService }) {
             <option value="Press Only">Press Only</option>
           </select>
 
-          {/* WEIGHT */}
           <input
             type="number"
             placeholder="Weight (kg)"
@@ -45,7 +64,6 @@ export default function AddOrderModal({ isOpen, onClose, onAddService }) {
             className="w-full px-4 py-2 border rounded-lg"
           />
 
-          {/* PRICE */}
           <input
             type="number"
             placeholder="Price per kg"
@@ -54,11 +72,9 @@ export default function AddOrderModal({ isOpen, onClose, onAddService }) {
             className="w-full px-4 py-2 border rounded-lg"
           />
 
-          {/* AUTO TOTAL */}
           <div className="text-lg font-semibold">Total: ₱{total}</div>
         </div>
 
-        {/* BUTTONS */}
         <div className="flex justify-end gap-3 mt-6">
           <button
             className="px-5 py-2 bg-gray-300 rounded-lg"
@@ -69,15 +85,7 @@ export default function AddOrderModal({ isOpen, onClose, onAddService }) {
 
           <button
             className="px-5 py-2 bg-green-600 text-white rounded-lg"
-            onClick={() => {
-              onAddService({
-                serviceName,
-                weight: Number(weight),
-                price: Number(price),
-                total,
-              });
-              onClose();
-            }}
+            onClick={handleAdd}
           >
             Add Item
           </button>

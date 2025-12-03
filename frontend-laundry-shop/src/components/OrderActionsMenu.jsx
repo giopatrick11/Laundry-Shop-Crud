@@ -7,12 +7,12 @@ export default function OrderActionsMenu({
   status,
 }) {
   const [open, setOpen] = useState(false);
-  const [openUp, setOpenUp] = useState(false); // decide direction
+  const [openUp, setOpenUp] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
-  const statusLocked = status === "completed" || status === "cancelled";
 
-  // Close when clicking outside
+  const locked = status === "completed" || status === "cancelled";
+
   useEffect(() => {
     const handler = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -24,22 +24,15 @@ export default function OrderActionsMenu({
   }, []);
 
   const toggleMenu = () => {
-    if (!buttonRef.current) {
-      setOpen((prev) => !prev);
-      return;
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setOpenUp(spaceBelow < 160);
     }
-
-    const rect = buttonRef.current.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - rect.bottom;
-
-    // ~160px is enough for your 3 options menu
-    setOpenUp(spaceBelow < 160);
     setOpen((prev) => !prev);
   };
 
-  const positionClasses = openUp
-    ? "bottom-full mb-2" // open upward
-    : "top-full mt-2"; // open downward (default)
+  const positionClasses = openUp ? "bottom-full mb-2" : "top-full mt-2";
 
   return (
     <div className="relative inline-block" ref={menuRef}>
@@ -58,16 +51,17 @@ export default function OrderActionsMenu({
             positionClasses
           }
         >
+          {/* UPDATE STATUS */}
           <button
-            disabled={statusLocked}
+            disabled={locked}
             className={
               "w-full text-left px-4 py-2 rounded " +
-              (statusLocked
+              (locked
                 ? "text-gray-400 cursor-not-allowed"
                 : "hover:bg-gray-100")
             }
             onClick={() => {
-              if (statusLocked) return; // prevent action
+              if (locked) return;
               setOpen(false);
               onStatus();
             }}
@@ -75,9 +69,17 @@ export default function OrderActionsMenu({
             Update Status
           </button>
 
+          {/* EDIT */}
           <button
-            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+            disabled={locked}
+            className={
+              "w-full text-left px-4 py-2 rounded " +
+              (locked
+                ? "text-gray-400 cursor-not-allowed"
+                : "hover:bg-gray-100")
+            }
             onClick={() => {
+              if (locked) return;
               setOpen(false);
               onEdit();
             }}
@@ -85,9 +87,15 @@ export default function OrderActionsMenu({
             Edit
           </button>
 
+          {/* DELETE */}
           <button
-            className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+            disabled={locked}
+            className={
+              "w-full text-left px-4 py-2 text-red-600 rounded " +
+              (locked ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100")
+            }
             onClick={() => {
+              if (locked) return;
               setOpen(false);
               onDelete();
             }}

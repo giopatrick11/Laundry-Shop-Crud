@@ -22,6 +22,10 @@ export default function Orders() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  // PAGINATION
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
   // Load all orders
   useEffect(() => {
     getOrders().then((res) => {
@@ -30,22 +34,32 @@ export default function Orders() {
     });
   }, []);
 
+  // Reset to page 1 when user searches
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   // Filter + sort
   const filteredOrders = [...orders]
     .sort((a, b) => b.id - a.id)
     .filter((order) => {
       const q = search.toLowerCase();
-
       const idMatch = order.id.toString().includes(q);
       const nameMatch = order.customer_name.toLowerCase().includes(q);
       const numberMatch = order.contact_number.toLowerCase().includes(q);
-
       const serviceMatch = order.items.some((item) =>
         item.serviceName?.toLowerCase().includes(q)
       );
-
       return idMatch || nameMatch || numberMatch || serviceMatch;
     });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedOrders = filteredOrders.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   return (
     <div className="flex">
@@ -112,7 +126,7 @@ export default function Orders() {
           />
         </div>
 
-        <div className="shadow-lg rounded-2xl  bg-white">
+        <div className="shadow-lg rounded-2xl bg-white">
           <table className="w-full table-fixed">
             <thead>
               <tr className="bg-gray-100 text-left">
@@ -126,12 +140,10 @@ export default function Orders() {
             </thead>
 
             <tbody>
-              {filteredOrders.map((order) => (
+              {paginatedOrders.map((order) => (
                 <tr key={order.id} className="border-b">
-                  {/* Order ID */}
                   <td className="py-4 px-6">{order.id}</td>
 
-                  {/* Customer */}
                   <td className="py-4 px-6">
                     {order.customer_name}
                     <br />
@@ -140,17 +152,14 @@ export default function Orders() {
                     </span>
                   </td>
 
-                  {/* Service */}
                   <td className="py-4 px-6">
                     {order.items.length === 1
                       ? order.items[0].serviceName
                       : `${order.items.length} services`}
                   </td>
 
-                  {/* Total */}
                   <td className="py-4 px-6">₱{order.total_amount}</td>
 
-                  {/* Status with Colors */}
                   <td className="py-4 px-6">
                     <span
                       className={
@@ -167,7 +176,6 @@ export default function Orders() {
                     </span>
                   </td>
 
-                  {/* Action Menu */}
                   <td className="py-4 px-6 text-right">
                     <OrderActionsMenu
                       status={order.status}
@@ -198,6 +206,37 @@ export default function Orders() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* PAGINATION */}
+        <div className="flex justify-center items-center gap-3 mt-6">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className={`px-4 py-2 rounded ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-white shadow"
+            }`}
+          >
+            Previous
+          </button>
+
+          <span className="px-3 py-1 bg-white shadow rounded">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className={`px-4 py-2 rounded ${
+              currentPage === totalPages || totalPages === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-white shadow"
+            }`}
+          >
+            Next
+          </button>
         </div>
 
         {/* UPDATE STATUS MODAL */}

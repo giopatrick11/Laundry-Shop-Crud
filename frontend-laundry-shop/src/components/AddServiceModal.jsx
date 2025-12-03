@@ -6,45 +6,60 @@ export default function AddServiceModal({ isOpen, onClose, onAddCustomer }) {
 
   if (!isOpen) return null;
 
+  const handleSave = () => {
+    if (!customerName.trim()) {
+      alert("Customer name is required.");
+      return;
+    }
+
+    if (!/^[a-zA-Z ]+$/.test(customerName)) {
+      alert("Customer name must contain letters only.");
+      return;
+    }
+
+    if (!contactNumber.trim()) {
+      alert("Contact number is required.");
+      return;
+    }
+
+    if (!/^[0-9]+$/.test(contactNumber)) {
+      alert("Contact number must contain digits only.");
+      return;
+    }
+
+    onAddCustomer({ customerName, contactNumber });
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-50 bg-white/20 backdrop-blur-sm">
-      <div className="bg-white w-[420px] p-6 rounded-2xl shadow-xl">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Customer Information
-        </h2>
+    <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex justify-center items-center z-50">
+      <div className="bg-white w-[420px] p-6 rounded-xl shadow-xl">
+        <h2 className="text-2xl font-bold mb-4">Customer Information</h2>
 
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Customer Name"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+        <input
+          type="text"
+          placeholder="Customer Name"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          className="w-full px-4 py-2 border rounded mb-3"
+        />
 
-          <input
-            type="text"
-            placeholder="Contact Number"
-            value={contactNumber}
-            onChange={(e) => setContactNumber(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Contact Number"
+          value={contactNumber}
+          onChange={(e) => setContactNumber(e.target.value)}
+          className="w-full px-4 py-2 border rounded mb-4"
+        />
 
-        <div className="flex justify-end gap-3 mt-6">
-          <button
-            className="px-5 py-2 bg-gray-300 rounded-lg"
-            onClick={onClose}
-          >
+        <div className="flex justify-end gap-3">
+          <button className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>
             Cancel
           </button>
 
           <button
-            className="px-5 py-2 bg-blue-600 text-white rounded-lg"
-            onClick={() => {
-              onAddCustomer({ customerName, contactNumber });
-              onClose();
-            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+            onClick={handleSave}
           >
             Save Customer
           </button>

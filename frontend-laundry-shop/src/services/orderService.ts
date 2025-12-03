@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Order, OrderPayload } from "../types/Order";
 
-const API_URL = "http://127.0.0.1:8000/api";
+const API_URL = "http://backend-laundry-shop.test/api";
 
 // Create a new order
 export const createOrder = (payload: OrderPayload) =>

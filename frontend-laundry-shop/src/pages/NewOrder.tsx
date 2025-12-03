@@ -1,18 +1,29 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 import AddServiceModal from "../components/AddServiceModal";
+import AddOrderModal from "../components/AddOrderModal";
+import ServiceActionsMenu from "../components/ServiceActionsMenu";
+import EditServiceModal from "../components/EditServiceModal";
+
 import type { ServiceItem } from "../types/Order";
 import { createOrder } from "../services/orderService";
-import AddOrderModal from "../components/AddOrderModal";
 
 export default function NewOrder() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
   const [services, setServices] = useState<ServiceItem[]>([]);
+  const [editingService, setEditingService] = useState<ServiceItem | null>(
+    null
+  );
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isEditServiceModalOpen, setIsEditServiceModalOpen] = useState(false);
 
   const [customerName, setCustomerName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
 
+  // prevent submitting incomplete service items
   const handleSubmitOrder = async () => {
     if (!customerName || !contactNumber) {
       alert("Please enter customer details first.");
@@ -22,6 +33,13 @@ export default function NewOrder() {
     if (services.length === 0) {
       alert("You must add at least 1 service.");
       return;
+    }
+
+    for (let s of services) {
+      if (!s.serviceName || !s.weight || !s.price) {
+        alert("All service fields must be filled.");
+        return;
+      }
     }
 
     const payload = {
@@ -36,7 +54,6 @@ export default function NewOrder() {
 
       alert("Order submitted successfully!");
 
-      // reset UI
       setCustomerName("");
       setContactNumber("");
       setServices([]);
@@ -99,7 +116,7 @@ export default function NewOrder() {
 
       {/* MAIN CONTENT */}
       <main className="bg-gray-200 min-h-screen w-full p-8 pt-20">
-        {/* TOP CARD */}
+        {/* TOP */}
         <div className="p-6 mb-8 rounded-2xl bg-gray-100 shadow flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">
@@ -127,47 +144,37 @@ export default function NewOrder() {
         </div>
 
         {/* TABLE */}
-        <div className="shadow-lg rounded-2xl overflow-hidden bg-white">
+        <div className="shadow-lg rounded-2xl overflow-visible bg-white relative">
           <table className="w-full table-fixed">
             <thead>
               <tr className="bg-gray-100">
-                <th className="w-1/6 py-4 px-6 text-left text-gray-600 font-bold uppercase">
-                  Service
-                </th>
-                <th className="w-1/6 py-4 px-6 text-left text-gray-600 font-bold uppercase">
-                  Weight (kg)
-                </th>
-                <th className="w-1/6 py-4 px-6 text-left text-gray-600 font-bold uppercase">
-                  Price/kg
-                </th>
-                <th className="w-1/6 py-4 px-6 text-left text-gray-600 font-bold uppercase">
-                  Total
-                </th>
-                <th className="w-1/6 py-4 px-6 bg-gray-100"></th>
-                <th className="w-1/6 py-4 px-6 bg-gray-100"></th>
+                <th className="py-4 px-6 text-left">Service</th>
+                <th className="py-4 px-6 text-left">Weight (kg)</th>
+                <th className="py-4 px-6 text-left">Price/kg</th>
+                <th className="py-4 px-6 text-left">Total</th>
+                <th className="py-4 px-6"></th>
               </tr>
             </thead>
 
-            <tbody className="bg-white">
+            <tbody>
               {services.map((s, i) => (
                 <tr key={i}>
-                  <td className="py-4 px-6 border-b border-gray-200">
-                    {s.serviceName}
-                  </td>
-                  <td className="py-4 px-6 border-b border-gray-200">
-                    {s.weight} kg
-                  </td>
-                  <td className="py-4 px-6 border-b border-gray-200">
-                    ₱{s.price}
-                  </td>
-                  <td className="py-4 px-6 border-b border-gray-200">
-                    ₱{s.total}
-                  </td>
-                  <td className="py-4 px-6 border-b border-gray-200"></td>
-                  <td className="py-4 px-6 border-b border-gray-200 text-right">
-                    <button className="px-3 py-1 rounded-lg hover:bg-gray-200">
-                      •••
-                    </button>
+                  <td className="py-4 px-6 border-b">{s.serviceName}</td>
+                  <td className="py-4 px-6 border-b">{s.weight} kg</td>
+                  <td className="py-4 px-6 border-b">₱{s.price}</td>
+                  <td className="py-4 px-6 border-b">₱{s.total}</td>
+
+                  <td className="py-4 px-6 border-b text-right">
+                    <ServiceActionsMenu
+                      onEdit={() => {
+                        setEditingIndex(i);
+                        setEditingService(s);
+                        setIsEditServiceModalOpen(true);
+                      }}
+                      onDelete={() => {
+                        setServices(services.filter((_, idx) => idx !== i));
+                      }}
+                    />
                   </td>
                 </tr>
               ))}
@@ -194,6 +201,7 @@ export default function NewOrder() {
             >
               Add Order
             </button>
+
             <button
               className="px-5 py-3 bg-green-600 text-white rounded-xl shadow hover:bg-green-700"
               onClick={handleSubmitOrder}
@@ -203,21 +211,33 @@ export default function NewOrder() {
           </div>
         </div>
 
+        {/* MODALS */}
         <AddServiceModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onAddCustomer={(data: {
-            customerName: string;
-            contactNumber: string;
-          }) => {
+          onAddCustomer={(data) => {
             setCustomerName(data.customerName);
             setContactNumber(data.contactNumber);
           }}
         />
+
         <AddOrderModal
           isOpen={isOrderModalOpen}
           onClose={() => setIsOrderModalOpen(false)}
           onAddService={(item: ServiceItem) => setServices([...services, item])}
+        />
+
+        <EditServiceModal
+          isOpen={isEditServiceModalOpen}
+          service={editingService}
+          onClose={() => setIsEditServiceModalOpen(false)}
+          onSave={(updated) => {
+            if (editingIndex === null) return;
+
+            const updatedList = [...services];
+            updatedList[editingIndex] = updated;
+            setServices(updatedList);
+          }}
         />
       </main>
     </div>

@@ -38,13 +38,13 @@ export default function Reports() {
 
           {/* Completed Orders */}
           <div className="p-6 bg-white rounded-lg shadow">
-            <span className="text-gray-500">Completed Orders</span>
+            <span className="text-gray-500">Completed Orders: </span>
             <span className="text-3xl font-bold">{completed}</span>
           </div>
 
           {/* Cancelled Orders */}
           <div className="p-6 bg-white rounded-lg shadow">
-            <span className="text-gray-500">Cancelled Orders</span>
+            <span className="text-gray-500">Cancelled Orders: </span>
             <span className="text-3xl font-bold">{cancelled}</span>
           </div>
         </div>

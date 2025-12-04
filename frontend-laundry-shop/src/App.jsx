@@ -14,6 +14,7 @@ import Users from "./pages/admin/Users";
 import Reports from "./pages/admin/Reports";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminCustomers from "./pages/admin/AdminCustomers";
+import CustomerDetails from "./pages/CustomerDetails";
 
 export default function App() {
   return (
@@ -111,6 +112,15 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["secretary", "admin"]}>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/customer/:phone"
+          element={
+            <ProtectedRoute allowedRoles={["secretary", "admin"]}>
+              <CustomerDetails />
             </ProtectedRoute>
           }
         />

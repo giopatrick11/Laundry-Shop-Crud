@@ -14,7 +14,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="flex flex-col w-64 h-screen px-4 py-8 bg-white border-r">
+    <aside className="flex flex-col w-64 h-screen px-4 py-8 bg-white ">
       {/* LOGO */}
       <div className="text-center mb-6">
         <span className="text-xl font-semibold">Admin Panel</span>
@@ -84,7 +84,8 @@ export default function AdminSidebar() {
       {/* LOGOUT */}
       <button
         onClick={handleLogout}
-        className="mt-auto px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg"
+        className="mt-auto w-full text-left px-4 py-2 text-red-600 
+             hover:bg-red-100 rounded-lg transition"
       >
         Logout
       </button>

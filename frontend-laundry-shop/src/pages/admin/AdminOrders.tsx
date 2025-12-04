@@ -5,6 +5,7 @@ import type { Order } from "../../types/Order";
 
 import UpdateStatusModal from "../../components/UpdateStatusModal";
 import EditOrderModal from "../../components/EditOrderModal";
+import ViewServicesModal from "../../components/ViewServicesModal";
 
 import {
   getOrders,
@@ -21,6 +22,7 @@ export default function AdminOrders() {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,9 +102,24 @@ export default function AdminOrders() {
                   </td>
 
                   <td className="py-4 px-6">
-                    {order.items.length === 1
-                      ? order.items[0].serviceName
-                      : `${order.items.length} services`}
+                    {order.items.length === 1 ? (
+                      order.items[0].serviceName
+                    ) : (
+                      <button
+                        className="text-blue-600 underline text-sm"
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setIsServiceModalOpen(true);
+                        }}
+                      >
+                        {order.items.length} services
+                      </button>
+                    )}
+
+                    {/* Show sample first service below (optional design) */}
+                    <div className="text-gray-400 text-xs">
+                      {order.items.length > 1 ? order.items[0].serviceName : ""}
+                    </div>
                   </td>
 
                   <td className="py-4 px-6">₱{order.total_amount}</td>
@@ -203,7 +220,11 @@ export default function AdminOrders() {
             updateOrder(selectedOrder.id, data).then(loadOrders);
           }}
         />
-
+        <ViewServicesModal
+          isOpen={isServiceModalOpen}
+          order={selectedOrder}
+          onClose={() => setIsServiceModalOpen(false)}
+        />
         {isDeleteModalOpen && (
           <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
             <div className="bg-white rounded-xl p-6 shadow w-[350px]">
